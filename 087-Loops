@@ -1,0 +1,8 @@
+Task:
+The provided code stub reads an integer,n , from STDIN. For all non-negative integers i<n , print i square.
+Program:
+n = int(input())
+for i in range (n):
+    if i<n:
+        print(i*i)
+Output:
