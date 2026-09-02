@@ -1,0 +1,124 @@
+TASK:
+A document is represented as a collection paragraphs, a paragraph is represented as a collection of sentences, a sentence is represented
+as a collection of words and a word is represented as a collection of lower-case ([a-z]) and upper-case ([A-Z]) English characters. 
+You will convert a raw text document into its component paragraphs, sentences and words. To test your results, queries will ask you to 
+return a specific paragraph, sentence or word as described below.
+Alicia is studying the C programming language at the University of Dunkirk and she represents the words, sentences, paragraphs, and
+documents using pointers:
+A word is described by:
+struct word {
+    char* data;
+};
+PROGRAM:
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#define MAX_CHARACTERS 1005
+#define MAX_PARAGRAPHS 5
+
+struct word {
+    char* data;
+};
+
+struct sentence {
+    struct word* data;
+    int word_count;//denotes number of words in a sentence
+};
+
+struct paragraph {
+    struct sentence* data  ;
+    int sentence_count;//denotes number of sentences in a paragraph
+};
+
+struct document {
+    struct paragraph* data;
+    int paragraph_count;//denotes number of paragraphs in a document
+};
+struct word get_word(char* text, int start, int end) {
+    struct word w;
+    int len = end - start;
+    w.data = (char*)malloc((len + 1) * sizeof(char));
+    strncpy(w.data, text + start, len);
+    w.data[len] = '\0';
+    return w;
+}
+struct document get_document(char* text) {
+    struct document doc;
+    doc.data = NULL;
+    doc.paragraph_count = 0;
+
+    int len = strlen(text);
+    int p_start = 0, s_start = 0, w_start = 0;
+
+    // First scan: Temporary storage structures to allocate paragraphs dynamically
+    struct paragraph current_p;
+    current_p.data = NULL;
+    current_p.sentence_count = 0;
+
+    struct sentence current_s;
+    current_s.data = NULL;
+    current_s.word_count = 0;
+
+    for (int i = 0; i <= len; i++) {
+        // Detect end of word / sentence boundaries
+        if (text[i] == ' ' || text[i] == '.' || text[i] == '\n' || text[i] == '\0') {
+            if (i > w_start) {
+                current_s.word_count++;
+                current_s.data = (struct word*)realloc(current_s.data, current_s.word_count * sizeof(struct word));
+                current_s.data[current_s.word_count - 1] = get_word(text, w_start, i);
+            }
+            w_start = i + 1;
+        }
+
+        // Detect end of a sentence
+        if (text[i] == '.') {
+            current_p.sentence_count++;
+            current_p.data = (struct sentence*)realloc(current_p.data, current_p.sentence_count * sizeof(struct sentence));
+            current_p.data[current_p.sentence_count - 1] = current_s;
+            
+            // Reset for next sentence
+            current_s.data = NULL;
+            current_s.word_count = 0;
+            s_start = i + 1;
+        }
+
+        // Detect end of a paragraph or document end
+        if (text[i] == '\n' || text[i] == '\0') {
+            // Handle edge case where a paragraph might end without a trailing period cleanly
+            if (current_s.word_count > 0) {
+                current_p.sentence_count++;
+                current_p.data = (struct sentence*)realloc(current_p.data, current_p.sentence_count * sizeof(struct sentence));
+                current_p.data[current_p.sentence_count - 1] = current_s;
+                current_s.data = NULL;
+                current_s.word_count = 0;
+            }
+
+            if (current_p.sentence_count > 0) {
+                doc.paragraph_count++;
+                doc.data = (struct paragraph*)realloc(doc.data, doc.paragraph_count * sizeof(struct paragraph));
+                doc.data[doc.paragraph_count - 1] = current_p;
+                
+                // Reset for next paragraph
+                current_p.data = NULL;
+                current_p.sentence_count = 0;
+            }
+            p_start = i + 1;
+        }
+    }
+    return doc;
+
+}
+
+struct word kth_word_in_mth_sentence_of_nth_paragraph(struct document Doc, int k, int m, int n) {
+  return Doc.data[n - 1].data[m - 1].data[k - 1];
+}
+
+struct sentence kth_sentence_in_mth_paragraph(struct document Doc, int k, int m) { 
+  return Doc.data[m - 1].data[k - 1];
+}
+
+struct paragraph kth_paragraph(struct document Doc, int k) {
+     return Doc.data[k - 1];
+
+}
