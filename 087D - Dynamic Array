@@ -1,0 +1,79 @@
+TASK:
+
+    Declare a 2-dimensional array, , with empty arrays, all zero-indexed.
+    Declare an integer, , and initialize it to 0.
+You need to process two types of queries:
+    Query:
+        Compute .
+        Append the integer to .
+    Query:
+        Compute .
+        Set .
+        Store the new value of in an answers array.
+Notes:
+- is the bitwise XOR operation, which corresponds to the ^ operator in most languages. Learn more about it on Wikipedia.
+- is the modulo operator.
+- Finally, is the number of elements in . 
+PROGRAM:
+#!/bin/python3
+
+import math
+import os
+import random
+import re
+import sys
+
+#
+# Complete the 'dynamicArray' function below.
+#
+# The function is expected to return an INTEGER_ARRAY.
+# The function accepts following parameters:
+#  1. INTEGER n
+#  2. 2D_INTEGER_ARRAY queries
+#
+
+def dynamicArray(n, queries):
+    # Initialize n empty sequences
+    arr = [[] for _ in range(n)]
+    lastAnswer = 0
+    answers = []
+    
+    for query in queries:
+        q_type = query[0]
+        x = query[1]
+        y = query[2]
+        
+        # Calculate the sequence index using bitwise XOR (^)
+        idx = (x ^ lastAnswer) % n
+        
+        if q_type == 1:
+            # Query type 1: Append y to the sequence at arr[idx]
+            arr[idx].append(y)
+        elif q_type == 2:
+            # Query type 2: Find element, update lastAnswer, and store it
+            element_idx = y % len(arr[idx])
+            lastAnswer = arr[idx][element_idx]
+            answers.append(lastAnswer)
+            
+    return answers
+
+if __name__ == '__main__':
+    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+
+    first_multiple_input = input().rstrip().split()
+
+    n = int(first_multiple_input[0])
+
+    q = int(first_multiple_input[1])
+
+    queries = []
+
+    for _ in range(q):
+        queries.append(list(map(int, input().rstrip().split())))
+
+    result = dynamicArray(n, queries)
+
+    fptr.write('\n'.join(map(str, result)))
+    fptr.write('\n')
+
+    fptr.close()
