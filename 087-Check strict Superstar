@@ -1,0 +1,24 @@
+TASK:
+You are given a set and other sets.
+Your job is to find whether set is a strict superset of each of the sets.
+Print True, if is a strict superset of each of the sets. Otherwise, print False.
+A strict superset has at least one element that does not exist in its subset. 
+PROGRAM:
+# Read the main set A
+A = set(map(int, input().split()))
+
+# Read the number of other sets
+num_other_sets = int(input())
+
+# Variable to keep track of the result
+is_strict_superset = True
+
+for _ in range(num_other_sets):
+    other_set = set(map(int, input().split()))
+    
+    # A is a strict superset if A contains all elements of other_set AND A is larger than other_set
+    if not (A.issuperset(other_set) and len(A) > len(other_set)):
+        is_strict_superset = False
+        break
+
+print(is_strict_superset)
