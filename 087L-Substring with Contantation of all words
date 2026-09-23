@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure to track word frequencies
+typedef struct {
+    char* word;
+    int count;
+} WordFreq;
+
+// Helper to find a word's index in our reference frequency array
+int findWordIndex(WordFreq* uniqueWords, int uniqueCount, const char* str, int len) {
+    for (int i = 0; i < uniqueCount; i++) {
+        if (strncmp(uniqueWords[i].word, str, len) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    *returnSize = 0;
+    if (!s || wordsSize == 0) return NULL;
+
+    int s_len = strlen(s);
+    int word_len = strlen(words[0]);
+    int total_words_len = wordsSize * word_len;
+
+    if (s_len < total_words_len) return NULL;
+
+    // 1. Build a unique frequency table for the input words
+    WordFreq* uniqueWords = (WordFreq*)malloc(wordsSize * sizeof(WordFreq));
+    int uniqueCount = 0;
+
+    for (int i = 0; i < wordsSize; i++) {
+        int idx = findWordIndex(uniqueWords, uniqueCount, words[i], word_len);
+        if (idx != -1) {
+            uniqueWords[idx].count++;
+        } else {
+            uniqueWords[uniqueCount].word = words[i];
+            uniqueWords[uniqueCount].count = 1;
+            uniqueCount++;
+        }
+    }
+
+    // Allocate maximum possible size for the result indices
+    int* result = (int*)malloc(s_len * sizeof(int));
+    int* currCounts = (int*)malloc(uniqueCount * sizeof(int));
+
+    // 2. Sliding window moving in word_len steps
+    for (int i = 0; i < word_len; i++) {
+        int left = i;
+        int count = 0;
+        memset(currCounts, 0, uniqueCount * sizeof(int));
+
+        for (int j = i; j <= s_len - word_len; j += word_len) {
+            int idx = findWordIndex(uniqueWords, uniqueCount, &s[j], word_len);
+
+            if (idx != -1) {
+                currCounts[idx]++;
+                count++;
+
+                // If a word frequency exceeds what's required, shrink window from the left
+                while (currCounts[idx] > uniqueWords[idx].count) {
+                    int leftIdx = findWordIndex(uniqueWords, uniqueCount, &s[left], word_len);
+                    currCounts[leftIdx]--;
+                    count--;
+                    left += word_len;
+                }
+
+                // If all words are matched perfectly, save starting index
+                if (count == wordsSize) {
+                    result[(*returnSize)++] = left;
+                    // Slide left pointer one word forward to look for next match
+                    int leftIdx = findWordIndex(uniqueWords, uniqueCount, &s[left], word_len);
+                    currCounts[leftIdx]--;
+                    count--;
+                    left += word_len;
+                }
+            } else {
+                // Invalid word encountered: Reset window metrics
+                memset(currCounts, 0, uniqueCount * sizeof(int));
+                count = 0;
+                left = j + word_len;
+            }
+        }
+    }
+
+    free(uniqueWords);
+    free(currCounts);
+    return result;
+}
