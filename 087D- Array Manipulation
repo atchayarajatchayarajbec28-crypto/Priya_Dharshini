@@ -1,0 +1,69 @@
+TASK:
+Starting with a 1-indexed array of zeros and a list of operations, for each operation add a value to each array element 
+between two given indices, inclusive. Once all operations have been performed, return the maximum value in the array.
+Example
+Queries are interpreted as follows:
+
+    a b k
+    1 5 3
+    4 8 7
+    6 9 1
+Add the values of between the indices and inclusive:
+PROGRAM:
+#!/bin/python3
+
+import math
+import os
+import random
+import re
+import sys
+
+#
+# Complete the 'arrayManipulation' function below.
+#
+# The function is expected to return a LONG_INTEGER.
+# The function accepts following parameters:
+#  1. INTEGER n
+#  2. 2D_INTEGER_ARRAY queries
+#
+
+def arrayManipulation(n, queries):
+    # Create a 1-indexed difference array of size n + 2 initialized to 0
+    # We add 2 to easily handle the boundary edge condition (b + 1)
+    diff = [0] * (n + 2)
+    
+    # 1. Apply the difference array technique for each query
+    for a, b, k in queries:
+        diff[a] += k
+        diff[b + 1] -= k
+        
+    # 2. Iterate through the array to calculate the prefix sum and track the max value
+    max_val = 0
+    current_sum = 0
+    
+    for i in range(1, n + 1):
+        current_sum += diff[i]
+        if current_sum > max_val:
+            max_val = current_sum
+            
+    return max_val
+
+if __name__ == '__main__':
+    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+
+    first_multiple_input = input().rstrip().split()
+
+    n = int(first_multiple_input[0])
+
+    m = int(first_multiple_input[1])
+
+    queries = []
+
+    for _ in range(m):
+        queries.append(list(map(int, input().rstrip().split())))
+
+    result = arrayManipulation(n, queries)
+
+    fptr.write(str(result) + '\n')
+
+    fptr.close()
