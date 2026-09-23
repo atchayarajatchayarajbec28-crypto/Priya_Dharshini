@@ -1,0 +1,19 @@
+Task
+Students of District College have subscriptions to English and French newspapers. Some students have subscribed to English 
+only, some have subscribed to French only, and some have subscribed to both newspapers.
+You are given two sets of student roll numbers. One set has subscribed to the English newspaper, and one set has subscribed 
+to the French newspaper. Your task is to find the total number of students who have subscribed to either the English or the
+French newspaper but not both.
+PROGRAM:
+# Read the number of English subscribers (unused in calculations)
+n = int(input())
+# Read the English subscriber roll numbers into a set
+english_subs = set(map(int, input().split()))
+
+# Read the number of French subscribers (unused in calculations)
+m = int(input())
+# Read the French subscriber roll numbers into a set
+french_subs = set(map(int, input().split()))
+
+# Find the symmetric difference of both sets and print the size
+print(len(english_subs.symmetric_difference(french_subs)))
