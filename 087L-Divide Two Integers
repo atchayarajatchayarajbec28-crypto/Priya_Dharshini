@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <limits.h>
+
+int divide(int dividend, int divisor) {
+    // Edge case: overflow handler for INT_MIN / -1
+    if (dividend == INT_MIN && divisor == -1) {
+        return INT_MAX;
+    }
+    
+    // Determine the sign of the quotient (true if negative)
+    int isNegative = (dividend < 0) ^ (divisor < 0);
+
+    // Cast to unsigned int BEFORE negating to prevent signed overflow errors
+    unsigned int absDividend = (dividend < 0) ? -(unsigned int)dividend : (unsigned int)dividend;
+    unsigned int absDivisor = (divisor < 0) ? -(unsigned int)divisor : (unsigned int)divisor;
+
+    unsigned int quotient = 0;
+
+    // Perform bitwise exponential subtraction
+    while (absDividend >= absDivisor) {
+        unsigned int tempDivisor = absDivisor;
+        unsigned int multiple = 1;
+
+        // Safely check boundary before left shifting to avoid bit overflow
+        while ((tempDivisor <= (UINT_MAX >> 1)) && (tempDivisor << 1) <= absDividend) {
+            tempDivisor <<= 1;
+            multiple <<= 1;
+        }
+
+        // Subtract the largest found multiple and update the quotient
+        absDividend -= tempDivisor;
+        quotient += multiple;
+    }
+
+    // FIX: Handle the INT_MIN boundary before casting to signed int
+    if (isNegative) {
+        if (quotient == (unsigned int)INT_MAX + 1) {
+            return INT_MIN; // Safely return -2147483648
+        }
+        return -(int)quotient;
+    }
+
+    return (int)quotient;
+}
